@@ -1,0 +1,6 @@
+Backupmethod=baidu
+Servername=newjersey
+Savefolder=streamrecorded
+Autobackup=on
+StreamOrRecord=record
+Rtmpurl=rtmp://live.mobcrush.net/stream/cf63be75295266115ed1677062e51c7339ebe7f1142a0f66db42cb86a5d273b3
