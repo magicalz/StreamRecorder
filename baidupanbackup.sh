@@ -6,7 +6,6 @@ SITE="$2"
 SERVERNAME=$(grep "Servername" ./config/config.global|awk -F = '{print $2}')
 SAVEFOLDER=$(grep "Savefolder" ./config/config.global|awk -F = '{print $2}')
 LOG_PREFIX=$(date +"[%Y-%m-%d-%H]")
-[[ ! -d "log" ]]&&mkdir log
 echo "$LOG_PREFIX BaiduPCS begin to backup files"
 echo "$LOG_PREFIX check ./log/BaiduPCS_${LOG_PREFIX}.log for detail"
 if [ "$NAME" == "all" ]
