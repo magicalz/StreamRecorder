@@ -15,6 +15,7 @@ fi
 FORMAT="${2:-best}"
 INTERVAL="${4:-15}"
 SAVEFOLDERGLOBAL=$(grep "Savefolder" ./config/config.global|awk -F = '{print $2}')
+LOGFOLDERGLOBAL=$(grep "Logfolder" ./config/config.global|awk -F = '{print $2}')
 SAVEFOLDER=$(grep "Savefolder" ./config/"$1".config|cut -c 12-)
 LOGFOLDER=$(grep "Logfolder" ./config/"$1".config|cut -c 11-)
 INTERVAL=$(grep "Checktime" ./config/"$1".config|cut -c 11-)
@@ -25,19 +26,20 @@ TWITCH=$(grep "Twitch" ./config/"$1".config|awk -F = '{print $2}')
 TWITCAST=$(grep "Twitcast" ./config/"$1".config|awk -F = '{print $2}')
 #OPENREC=$(grep "openrec" ./config/"$1".config|grep -v https://www.openrec.tv/user/|cut -c 29-)
 STREAMORRECORD=$(grep "StreamOrRecord" ./config/config.global|awk -F = '{print $2}')
-if grep -q "StreamOrRecord" ./config/${NAME}.config
+if grep -q "StreamOrRecord" ./config/${1}.config
 then
-  STREAMORRECORD=$(grep "StreamOrRecord" ./config/${NAME}.config|awk -F = '{print $2}')
+  STREAMORRECORD=$(grep "StreamOrRecord" ./config/${1}.config|awk -F = '{print $2}')
 fi
 RTMPURL=$(grep "Rtmpurl" ./config/config.global|awk -F = '{print $2}')
-if grep -q "Rtmpurl" ./config/${NAME}.config
+if grep -q "Rtmpurl" ./config/${1}.config
 then
-  RTMPURL=$(grep "Rtmpurl" ./config/${NAME}.config|awk -F = '{print $2}')
+  RTMPURL=$(grep "Rtmpurl" ./config/${1}.config|awk -F = '{print $2}')
 fi
 
 ([ "$STREAMORRECORD" == "both" ] || [ "$STREAMORRECORD" == "stream" ]) && [ -z "$RTMPURL" ] && echo "skip...Rtmpurl is empty, please check StreamOrRecord and Rtmpurl parameters in config file" && exit 1
 
 [[ ! -d "${SAVEFOLDERGLOBAL}" ]]&&mkdir ${SAVEFOLDERGLOBAL}
+[[ ! -d "${LOGFOLDERGLOBAL}" ]]&&mkdir ${LOGFOLDERGLOBAL}
 [[ ! -d "${SAVEFOLDER}" ]]&&mkdir ${SAVEFOLDER}
 [[ ! -d "${LOGFOLDER}" ]]&&mkdir ${LOGFOLDER}
 
