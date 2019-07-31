@@ -11,7 +11,8 @@ then
   BACKUPMETHOD=$(grep "Backupmethod" ./config/${NAME}.config|awk -F = '{print $2}')
 fi
 [[ ! -d "log" ]]&&mkdir log
-LOG_PREFIX=$(date +"[%Y-%m-%d-%H]")
+LOG_PREFIX=$(date +"[%Y-%m-%d %H:%M:%S]")
+LOG_SUFFIX=$(date +"%Y%m%d_%H%M%S")
 if [ "$NAME" == "all" ]
 then
   STREAMLINK_PROCESS=$(ps -efwww|grep streamlink|grep -v 'grep')
@@ -30,11 +31,11 @@ then
 fi
 if [ $BACKUPMETHOD == "baidu" ] || [ $BACKUPMETHOD == "all" ]
 then
-  echo "$LOG_PREFIX check /root/stream-recorder/log/screenlog_${LOG_PREFIX}_baidu.log for detail"
-  screen -L -t ${LOG_PREFIX}"_baidu" -dmS "baidu" ./baidupanbackup.sh $NAME $SITE
+  echo "$LOG_PREFIX check ./log/screenlog_baidu_${LOG_SUFFIX}.log for detail"
+  screen -L -t "baidu_${LOG_SUFFIX}" -dmS "baidu" ./baidupanbackup.sh $NAME $SITE
 fi
 if [ $BACKUPMETHOD == "rclone" ] || [ $BACKUPMETHOD == "all" ]
 then
-  echo "$LOG_PREFIX check /root/stream-recorder/log/screenlog_${LOG_PREFIX}_rclone.log for detail"
-  screen -L -t ${LOG_PREFIX}"_rclone" -dmS "rclone" ./rclonebackup.sh $NAME $SITE
+  echo "$LOG_PREFIX check ./log/screenlog_rclone_${LOG_SUFFIX}.log for detail"
+  screen -L -t "rclone_${LOG_SUFFIX}" -dmS "rclone" ./rclonebackup.sh $NAME $SITE
 fi

@@ -1,20 +1,19 @@
 #!/bin/bash
 source /etc/profile
 cd /root/stream-recorder
-LOG_PREFIX=$(date +"[%Y-%m-%d-%H]")
+LOG_PREFIX=$(date +"[%Y-%m-%d %H:%M:%S]")
+LOG_SUFFIX=$(date +"%Y%m%d_%H%M%S")
 for ((NUM=$(ls ./config|grep -c .config); NUM>0; --NUM))
 do
 NAME=$(ls ./config|grep .config|sed 's/.config//g'|sed -n "$NUM"p)
-sleep 1
 if [ -z "$(screen -ls|grep $NAME)" ]
 then
-screen -L -t ${LOG_PREFIX}_${NAME} -dmS $NAME ./controller.sh $NAME
-#SCREENPID=$!
-#echo "$NAME.$SCREENPID" >> "./screenpid.txt"
 sleep 1
-echo "running new screen for $NAME"
-echo "check /root/stream-recorder/log/screenlog_${LOG_PREFIX}_${NAME}.log for detail"
+screen -L -t ${NAME}_${LOG_SUFFIX} -dmS $NAME ./controller.sh $NAME
+sleep 1
+echo "$LOG_PREFIX running new screen for $NAME"
+echo "$LOG_PREFIX check ./log/screenlog_${NAME}_${LOG_SUFFIX}.log for detail"
 else
-echo "skip...screen for $NAME already running"
+echo "$LOG_PREFIX skip...screen for $NAME already running"
 fi
 done

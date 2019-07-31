@@ -1,7 +1,8 @@
 #!/bin/bash
 screen -ls
-echo "Please input the name of screen you want to close, input all to close all screens:"
+echo "Please input the name of screen you want to close, input all to close all screens, input exit to exit:"
 read NAME
+[ "$NAME" == "exit" ]&&exit 0
 if [ "$NAME" == "all" ]
 then
 #LINECOUNT=$(screen -ls|wc -l)
