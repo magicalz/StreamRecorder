@@ -33,7 +33,8 @@ while true; do
  
   # Record using MPEG-2 TS format to avoid broken file caused by interruption
   MOVIEID=$(wget -q -O- ${LIVE_URL} | grep data-movie-id | awk -F '[=\"]+' '{print $2}')
-  LIVEDL_FNAME="${1}_${MOVIEID}.ts" 
+  CHANNELID=$(echo "$1"|sed 's/:/：/') 
+  LIVEDL_FNAME="${CHANNELID}_${MOVIEID}.ts" 
   FNAME="twitcast_$(date +"%Y%m%d_%H%M%S")_${MOVIEID}.ts"
   echo "$LOG_PREFIX Start recording, stream saved to $4$FNAME."
   echo "$LOG_PREFIX Use command \"tail -f ${5}${FNAME}.log\" to track recording progress."
@@ -49,7 +50,7 @@ while true; do
   #move stream file to streamrecorded folder
   sleep 5
   [ -f "./${LIVEDL_FNAME}" ] && mv ./$LIVEDL_FNAME $4$FNAME
-  sleep 10
+  sleep 5 
   # backup stream if autobackup is on
   if [ "$AUTOBACKUP" == "on" ]
   then

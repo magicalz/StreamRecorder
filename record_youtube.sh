@@ -67,17 +67,17 @@ while true; do
     #ffmpeg   -i "$M3U8_URL" -codec copy   -f hls -hls_time 3600 -hls_list_size 0 "$5$FNAME" > "${6}${FNAME}.log" 2>&1    
     if [ "$STREAMORRECORD" == "both" ]
     then
-      streamlink --loglevel trace "https://www.youtube.com/watch?v=${ID}" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
+      streamlink --loglevel trace "$LIVE_URL" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
       -codec copy -f mpegts "$5$FNAME" \ 
       -vcodec copy -acodec aac -strict -2 -f flv "${RTMPURL}" \
       > "${6}${FNAME}.log" 2>&1
     elif [ "$STREAMORRECORD" == "record" ]
     then
       streamlink --hls-live-restart --loglevel trace -o "$5$FNAME" \
-      "https://www.youtube.com/watch?v=${ID}" "1080p,720p,best" > "${6}${FNAME}.log" 2>&1
+      "$LIVE_URL" "1080p,720p,best" > "${6}${FNAME}.log" 2>&1
     elif [ "$STREAMORRECORD" == "stream" ]
     then
-      streamlink --loglevel trace "https://www.youtube.com/watch?v=${ID}" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
+      streamlink --loglevel trace "$LIVE_URL" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
       -vcodec copy -acodec aac -strict -2 -f flv "${RTMPURL}" \
       > "${6}${FNAME}.log" 2>&1 
     else
