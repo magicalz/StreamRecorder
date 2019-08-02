@@ -1,6 +1,6 @@
 #!/bin/bash
 source /etc/profile
-cd /root/stream-recorder
+cd `dirname $0`
 LOG_PREFIX=$(date +"[%Y-%m-%d %H:%M:%S]")
 LOG_SUFFIX=$(date +"%Y%m%d_%H%M%S")
 for ((NUM=$(ls ./config|grep -c .config); NUM>0; --NUM))
