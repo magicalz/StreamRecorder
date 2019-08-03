@@ -21,12 +21,19 @@ fi
 if grep -q "Copied (new)" ./log/rclone_${LOG_SUFFIX}.log
 then
   echo "$LOG_PREFIX rclone backup complete" 
-  if [ -z "$(screen -ls|grep baidu)" ]
+  if [ "$NAME" == "all" ]
+  then
+    BAIDU_PROCESS=$(screen -ls|grep baidu)
+  else
+    BAIDU_PROCESS=$(screen -ls|grep baidu|grep $NAME)
+  fi
+  if [ -z "$BAIDU_PROCESS" ]
   then 
     echo "$LOG_PREFIX begin to clean files"
     ./clean.sh $NAME $SITE
   else
-    echo "$LOG_PREFIX skip clean...BadiduPCS backup stilling running" 
+    echo "$LOG_PREFIX skip clean...BadiduPCS backup stilling running"
+    echo "$BAIDU_PROCESS" 
   fi
 else
   echo "$LOG_PREFIX skip clean...rclone backup failed, check ./log/rclone_${LOG_SUFFIX}.log for detail"

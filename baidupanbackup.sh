@@ -23,11 +23,18 @@ then
   echo "$LOG_PREFIX skip clean...BaiduPCS backup failed, check ./log/BaiduPCS_${LOG_SUFFIX}.log for detail"
 else  
   echo "$LOG_PREFIX BaiduPCS backup complete"
-  if [ -z "$(screen -ls|grep rclone)" ]
+  if [ "$NAME" == "all" ]
+  then
+    RCLONE_PROCESS=$(screen -ls|grep rclone)
+  else
+    RCLONE_PROCESS=$(screen -ls|grep rclone|grep $NAME)
+  fi
+  if [ -z "$RCLONE_PROCESS" ]
   then
     echo "$LOG_PREFIX begin to clean files"
     ./clean.sh $NAME $SITE
   else
-    echo "$LOG_PREFIX skip...rclone backup stilling running"  
+    echo "$LOG_PREFIX skip...rclone backup stilling running"
+    echo "$RCLONE_PROCESS"  
   fi
 fi
