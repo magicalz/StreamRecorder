@@ -12,7 +12,7 @@ sleep 1
 screen -L -t ${NAME}_${LOG_SUFFIX} -dmS $NAME ./controller.sh $NAME
 sleep 1
 echo "$LOG_PREFIX running new screen for $NAME"
-echo "$LOG_PREFIX check ./log/screenlog_${NAME}_${LOG_SUFFIX}.log for detail"
+echo "$LOG_PREFIX check ./log/screen/screenlog_${NAME}_${LOG_SUFFIX}.log for detail"
 else
 echo "$LOG_PREFIX skip...screen for $NAME already running"
 fi

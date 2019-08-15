@@ -31,11 +31,11 @@ then
 fi
 if [ $BACKUPMETHOD == "baidu" ] || [ $BACKUPMETHOD == "all" ]
 then
-  echo "$LOG_PREFIX check ./log/screenlog_baidu_${LOG_SUFFIX}.log for detail"
+  echo "$LOG_PREFIX check ./log/screen/screenlog_baidu_${LOG_SUFFIX}.log for detail"
   screen -L -t "baidu_${LOG_SUFFIX}" -dmS "baidu" ./baidupanbackup.sh $NAME $SITE
 fi
 if [ $BACKUPMETHOD == "rclone" ] || [ $BACKUPMETHOD == "all" ]
 then
-  echo "$LOG_PREFIX check ./log/screenlog_rclone_${LOG_SUFFIX}.log for detail"
+  echo "$LOG_PREFIX check ./log/screen/screenlog_rclone_${LOG_SUFFIX}.log for detail"
   screen -L -t "rclone_${LOG_SUFFIX}" -dmS "rclone" ./rclonebackup.sh $NAME $SITE
 fi
