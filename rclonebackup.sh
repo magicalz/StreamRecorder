@@ -18,7 +18,6 @@ then
 else
   rclone copy --no-traverse "${SAVEFOLDER}/${NAME}/${SITE}" ${REMOTENAME}:${SERVERNAME}/stream-recorder/${SAVEFOLDER}/${NAME}/${SITE} --include-from rcloneinclude.txt --buffer-size 32M --transfers 6 --low-level-retries 200 -v > "./log/rclone_${LOG_SUFFIX}.log" 2>&1  
 fi
-if grep -q "Copied (new)" ./log/rclone_${LOG_SUFFIX}.log
 if ! grep -q "ERROR" ./log/rclone_${LOG_SUFFIX}.log && grep -q "Copied (new)" ./log/rclone_${LOG_SUFFIX}.log
 then
   echo "$LOG_PREFIX rclone backup complete" 
