@@ -38,10 +38,16 @@ while true; do
     echo "$LOG_PREFIX Retry after $INTERVAL seconds..."
     sleep $INTERVAL
   done
-    METADATA=$(youtube-dl --get-id --get-title --get-description \
+  #Create save folder by date
+  FOLDERBYDATE="$(date +"%Y%m%d")"
+  [[ ! -d "${5}${FOLDERBYDATE}" ]]&&mkdir ${5}${FOLDERBYDATE}
+  #[[ ! -d "${5}${FOLDERBYDATE}/metadata" ]]&&mkdir ${5}${FOLDERBYDATE}/metadata
+
+  #Fetch live information
+  METADATA=$(youtube-dl --get-id --get-title --get-description \
       --no-check-certificate --no-playlist --playlist-items 1 \
       "${LIVE_URL}" 2>/dev/null)
-	#Savetitle
+  #Savetitle
   #Title=$(echo "$METADATA" | sed -n '1p'|sed 's#[()/\\!-\$]##g')
 
   # Extract video id of live stream
@@ -53,10 +59,10 @@ while true; do
   # Also save the metadate to file
   if [ -n "$METADATA" ]
   then 
-    echo "$METADATA" > "${5}metadata/${FNAME}.info.txt"
+    echo "$METADATA" > "${5}${FOLDERBYDATE}/${FNAME}.info.txt"
 
   # Print logs
-    echo "$LOG_PREFIX Start recording, metadata saved to ${5}metadata/${FNAME}.info.txt."
+    echo "$LOG_PREFIX Start recording, metadata saved to ${5}${FOLDERBYDATE}/${FNAME}.info.txt."
     echo "$LOG_PREFIX Use command \"tail -f ${6}${FNAME}.log\" to track recording progress."
 
   # Start recording
@@ -64,16 +70,16 @@ while true; do
 
   # Use streamlink to record for HLS seeking support
     #M3U8_URL=$(streamlink --stream-url "https://www.youtube.com/watch?v=${ID}" "best")
-    #ffmpeg   -i "$M3U8_URL" -codec copy   -f hls -hls_time 3600 -hls_list_size 0 "$5$FNAME" > "${6}${FNAME}.log" 2>&1    
+    #ffmpeg   -i "$M3U8_URL" -codec copy   -f hls -hls_time 3600 -hls_list_size 0 "${5}${FOLDERBYDATE}/${FNAME}" > "${6}${FNAME}.log" 2>&1    
     if [ "$STREAMORRECORD" == "both" ]
     then
       streamlink --loglevel trace "$LIVE_URL" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
-      -codec copy -f mpegts "$5$FNAME" \ 
+      -codec copy -f mpegts "${5}${FOLDERBYDATE}/${FNAME}" \ 
       -vcodec copy -acodec aac -strict -2 -f flv "${RTMPURL}" \
       > "${6}${FNAME}.log" 2>&1
     elif [ "$STREAMORRECORD" == "record" ]
     then
-      streamlink --hls-live-restart --loglevel trace -o "$5$FNAME" \
+      streamlink --hls-live-restart --loglevel trace -o "${5}${FOLDERBYDATE}/${FNAME}" \
       "$LIVE_URL" "1080p,720p,best" > "${6}${FNAME}.log" 2>&1
     elif [ "$STREAMORRECORD" == "stream" ]
     then
