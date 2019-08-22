@@ -47,7 +47,7 @@ fi
 
 if [[ -n "$YOUTUBE" ]]; then  
 [[ ! -d "${SAVEFOLDER}youtube" ]]&&mkdir ${SAVEFOLDER}youtube
-[[ ! -d "${SAVEFOLDER}youtube/metadata" ]]&&mkdir ${SAVEFOLDER}youtube/metadata
+#[[ ! -d "${SAVEFOLDER}youtube/metadata" ]]&&mkdir ${SAVEFOLDER}youtube/metadata
 [[ ! -d "${LOGFOLDER}youtube" ]]&&mkdir ${LOGFOLDER}youtube
 sleep 5
 ./record_youtube.sh $YOUTUBE $FORMAT $LOOP $INTERVAL ${SAVEFOLDER}youtube/ ${LOGFOLDER}youtube/ $1 $STREAMORRECORD $RTMPURL &
