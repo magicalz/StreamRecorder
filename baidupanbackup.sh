@@ -1,23 +1,20 @@
 #!/bin/bash
-#usage: $0 [name|all] [youtube|bilibili|twitch|twitcast]
+#usage: $0 [name|all] [youtube|bilibili|twitch|twitcast] [folderbydate] [filename]
 
 NAME="${1:-all}"
 SITE="$2"
 SERVERNAME=$(grep "Servername" ./config/config.global|awk -F = '{print $2}')
 SAVEFOLDER=$(grep "Savefolder" ./config/config.global|awk -F = '{print $2}')
+TARGETPATH="/stream-recorder/$SERVERNAME"
+[ "$NAME" != "all" ] && TARGETPATH="$TARGETPATH/$SAVEFOLDER" && SAVEFOLDER="$SAVEFOLDER/$NAME"
+[ -n "$SITE" ] && TARGETPATH="$TARGETPATH/$NAME" && SAVEFOLDER="$SAVEFOLDER/$SITE"
+[ -n "$3" ] && TARGETPATH="$TARGETPATH/$SITE" && SAVEFOLDER="$SAVEFOLDER/$3"
+[ -n "$4" ] && FILENAME=$(echo "$4"|awk -F . '{print $1}') && TARGETPATH="$TARGETPATH/$3" && SAVEFOLDER="$SAVEFOLDER/$FILENAME.*" 
 LOG_PREFIX=$(date +"[%Y-%m-%d %H:%M:%S]")
 LOG_SUFFIX=$(date +"%Y%m%d_%H%M%S")
 echo "$LOG_PREFIX BaiduPCS begin to backup files"
 echo "$LOG_PREFIX check ./log/BaiduPCS_${LOG_SUFFIX}.log for detail"
-if [ "$NAME" == "all" ]
-then
-  BaiduPCS-Go upload "$SAVEFOLDER" "/stream-recorder/${SERVERNAME}" > "./log/BaiduPCS_${LOG_SUFFIX}.log" 2>&1
-elif [ -z "$SITE" ]
-then
-  BaiduPCS-Go upload "${SAVEFOLDER}/${NAME}" "/stream-recorder/${SERVERNAME}/${SAVEFOLDER}" > "./log/BaiduPCS_${LOG_SUFFIX}.log" 2>&1
-else
-  BaiduPCS-Go upload "${SAVEFOLDER}/${NAME}/${SITE}" "/stream-recorder/${SERVERNAME}/${SAVEFOLDER}/${NAME}" > "./log/BaiduPCS_${LOG_SUFFIX}.log" 2>&1
-fi
+BaiduPCS-Go upload "$SAVEFOLDER" "$TARGETPATH" > "./log/BaiduPCS_${LOG_SUFFIX}.log" 2>&1
 if grep -q -E "上传文件失败|全部上传完毕, 总大小: 0B" ./log/BaiduPCS_${LOG_SUFFIX}.log
 then
   echo "$LOG_PREFIX skip clean...BaiduPCS backup failed, check ./log/BaiduPCS_${LOG_SUFFIX}.log for detail"
@@ -32,7 +29,7 @@ else
   if [ -z "$RCLONE_PROCESS" ]
   then
     echo "$LOG_PREFIX begin to clean files"
-    ./clean.sh $NAME $SITE
+    ./clean.sh $NAME $SITE $3 $4
   else
     echo "$LOG_PREFIX skip...rclone backup stilling running"
     echo "$RCLONE_PROCESS"  

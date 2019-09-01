@@ -36,7 +36,11 @@ while true; do
   CHANNELID=$(echo "$1"|sed 's/:/：/') 
   LIVEDL_FNAME="${CHANNELID}_${MOVIEID}.ts" 
   FNAME="twitcast_$(date +"%Y%m%d_%H%M%S")_${MOVIEID}.ts"
-  echo "$LOG_PREFIX Start recording, stream saved to $4$FNAME."
+  #Create save folder by date
+  FOLDERBYDATE="$(date +"%Y%m%d")"
+  [[ ! -d "${4}${FOLDERBYDATE}" ]]&&mkdir ${4}${FOLDERBYDATE}
+
+  echo "$LOG_PREFIX Start recording, stream saved to $4$FOLDERBYDATE/$FNAME."
   echo "$LOG_PREFIX Use command \"tail -f ${5}${FNAME}.log\" to track recording progress."
 
   # Also record low resolution stream simultaneously as backup
@@ -48,8 +52,7 @@ while true; do
   ./livedl -tcas "$1" > "${5}${FNAME}.log" 2>&1
   STREAMSUCCESS=$? 
   #move stream file to streamrecorded folder
-  sleep 5
-  [ -f "./${LIVEDL_FNAME}" ] && mv ./$LIVEDL_FNAME $4$FNAME
+  [ $STREAMSUCCESS -eq 0 ] && [ -f "./${LIVEDL_FNAME}" ] && mv ./$LIVEDL_FNAME $4$FOLDERBYDATE/$FNAME
   sleep 5 
   # backup stream if autobackup is on
   if [ "$AUTOBACKUP" == "on" ]
@@ -57,7 +60,7 @@ while true; do
     #if tail -n 5 "${5}${FNAME}.log"|grep -q "Stream ended"
     if [ $STREAMSUCCESS -eq 0 ] 
     then
-      ./autobackup.sh $6 $SITE &
+      ./autobackup.sh $6 $SITE $FOLDERBYDATE $FNAME &
     else
       echo "stream record fail, check "${5}${FNAME}.log" for detail."
     fi

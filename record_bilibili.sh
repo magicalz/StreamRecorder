@@ -37,13 +37,17 @@ while true; do
   # Record using MPEG-2 TS format to avoid broken file caused by interruption
   FNAME="bil_$1_${TITLE}_$(date +"%Y%m%d_%H%M%S").ts"
   #FNAME="bil_$1_$(date +"%Y%m%d_%H%M%S").ts" 
-  echo "$LOG_PREFIX Start recording, stream saved to $5$FNAME."
+  #Create save folder by date
+  FOLDERBYDATE="$(date +"%Y%m%d")"
+  [[ ! -d "${5}${FOLDERBYDATE}" ]]&&mkdir ${5}${FOLDERBYDATE}
+
+  echo "$LOG_PREFIX Start recording, stream saved to $5$FOLDERBYDATE/$FNAME."
   echo "$LOG_PREFIX Use command \"tail -f ${6}${FNAME}.log\" to track recording progress."
 
   # Start recording
   #M3U8_URL=$(streamlink --stream-url "https://live.bilibili.com/$1" "best")
   #ffmpeg  -i "$M3U8_URL" -codec copy   -f hls -hls_time 3600 -hls_list_size 0 "$5$FNAME" > "${6}${FNAME}.log" 2>&1
-  streamlink --hls-live-restart --loglevel trace -o "$5$FNAME" \
+  streamlink --hls-live-restart --loglevel trace -o "$5$FOLDERBYDATE/$FNAME" \
   "https://live.bilibili.com/${1}" "$FORMAT" > "${6}${FNAME}.log" 2>&1
   #STREAMSUCCESS=$?
   # Backup stream if autobackup is on
@@ -53,7 +57,7 @@ while true; do
       #if [ $STREAMSUCCESS -eq 0 ]
       if tail -n 5 "${6}${FNAME}.log"|grep -q "Stream ended"  
       then
-        ./autobackup.sh $7 $SITE &
+        ./autobackup.sh $7 $SITE $FOLDERBYDATE $FNAME &
       else
         echo "stream record fail, check "${6}${FNAME}.log" for detail."
       fi

@@ -1,22 +1,24 @@
 #!/bin/bash
-#usage: $0 [name|all] [youtube|bilibili|twitch|twitcast]
+#usage: $0 [name|all] [youtube|bilibili|twitch|twitcast] [folderbydate] [filename]
 NAME="${1:-all}"
 SITE="$2"
 SERVERNAME=$(grep "Servername" ./config/config.global|awk -F = '{print $2}')
 SAVEFOLDER=$(grep "Savefolder" ./config/config.global|awk -F = '{print $2}')
 REMOTENAME=$(grep "Rcloneremotename" ./config/config.global|awk -F = '{print $2}')
+TARGETPATH="${REMOTENAME}:${SERVERNAME}/stream-recorder/${SAVEFOLDER}"
+[ "$NAME" != "all" ] && SAVEFOLDER="$SAVEFOLDER/$NAME" && TARGETPATH="$TARGETPATH/$NAME"
+[ -n "$SITE" ] && SAVEFOLDER="$SAVEFOLDER/$SITE" && TARGETPATH="$TARGETPATH/$SITE"
+[ -n "$3" ] && SAVEFOLDER="$SAVEFOLDER/$3" && TARGETPATH="$TARGETPATH/$3" 
 LOG_PREFIX=$(date +"[%Y-%m-%d %H:%M:%S]")
 LOG_SUFFIX=$(date +"%Y%m%d_%H%M%S")
 echo "$LOG_PREFIX rclone begin to backup files"
 echo "$LOG_PREFIX check ./log/rclone_${LOG_SUFFIX}.log for detail"
-if [ "$NAME" == "all" ]
+if [ -n "$4" ]
 then
-  rclone copy --no-traverse "$SAVEFOLDER" ${REMOTENAME}:${SERVERNAME}/stream-recorder/${SAVEFOLDER} --include-from rcloneinclude.txt --buffer-size 32M --transfers 6 --low-level-retries 200 -v > "./log/rclone_${LOG_SUFFIX}.log" 2>&1
-elif [ -z "$SITE" ]
-then
-  rclone copy --no-traverse "${SAVEFOLDER}/${NAME}" ${REMOTENAME}:${SERVERNAME}/stream-recorder/${SAVEFOLDER}/${NAME} --include-from rcloneinclude.txt --buffer-size 32M --transfers 6 --low-level-retries 200 -v > "./log/rclone_${LOG_SUFFIX}.log" 2>&1
+  FILENAME=$(echo "$4"|awk -F . '{print $1}')
+  rclone copy --no-traverse "$SAVEFOLDER" "$TARGETPATH" --include "$FILENAME.*" --buffer-size 32M --transfers 6 --low-level-retries 200 -v > "./log/rclone_${LOG_SUFFIX}.log" 2>&1
 else
-  rclone copy --no-traverse "${SAVEFOLDER}/${NAME}/${SITE}" ${REMOTENAME}:${SERVERNAME}/stream-recorder/${SAVEFOLDER}/${NAME}/${SITE} --include-from rcloneinclude.txt --buffer-size 32M --transfers 6 --low-level-retries 200 -v > "./log/rclone_${LOG_SUFFIX}.log" 2>&1  
+  rclone copy --no-traverse "$SAVEFOLDER" "$TARGETPATH" --include-from rcloneinclude.txt --buffer-size 32M --transfers 6 --low-level-retries 200 -v > "./log/rclone_${LOG_SUFFIX}.log" 2>&1
 fi
 if ! grep -q "ERROR" ./log/rclone_${LOG_SUFFIX}.log && grep -q "Copied (new)" ./log/rclone_${LOG_SUFFIX}.log
 then
@@ -30,7 +32,7 @@ then
   if [ -z "$BAIDU_PROCESS" ]
   then 
     echo "$LOG_PREFIX begin to clean files"
-    ./clean.sh $NAME $SITE
+    ./clean.sh $NAME $SITE $3 $4
   else
     echo "$LOG_PREFIX skip clean...BadiduPCS backup stilling running"
     echo "$BAIDU_PROCESS" 

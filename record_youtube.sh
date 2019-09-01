@@ -2,7 +2,7 @@
 # YouTube Live Stream Recorder
 
 if [[ ! -n "$1" ]]; then
-  echo "usage: $0 live_url [format] [loop|once] [interval] [savefolder] [logfolder] [name] [STREAMORRECORD] [RTMPURL]"
+  echo "usage: $0 live_url [format] [loop|once] [interval] [savefolder] [logfolder] [name] [streamorrecord] [rtmpurl]"
   exit 1
 fi
 
@@ -30,10 +30,10 @@ while true; do
     # Add parameters about playlist to avoid downloading
     # the full video playlist uploaded by channel accidently.
 
-  #curl -s  https://www.youtube.com/channel/$1|grep -q "ライブ配信中" && break
-  #curl -s -N https://www.youtube.com/channel/$1/live|grep -q '\\"isLive\\":true' && break
-  wget -q -O- $LIVE_URL|grep -q '\\"isLive\\":true' && break
-
+    #curl -s  https://www.youtube.com/channel/$1|grep -q "ライブ配信中" && break
+    #curl -s -N https://www.youtube.com/channel/$1/live|grep -q '\\"isLive\\":true' && break
+    #wget -q -O- $LIVE_URL|grep -q '\\"isLive\\":true' && break
+    [ $(wget -q -O- "$LIVE_URL" |grep -o '\\"isLive\\":true'|wc -l) -ge 2 ] && break
     echo "$LOG_PREFIX The stream is not available now."
     echo "$LOG_PREFIX Retry after $INTERVAL seconds..."
     sleep $INTERVAL
@@ -44,11 +44,13 @@ while true; do
   #[[ ! -d "${5}${FOLDERBYDATE}/metadata" ]]&&mkdir ${5}${FOLDERBYDATE}/metadata
 
   #Fetch live information
-  METADATA=$(youtube-dl --get-id --get-title --get-description \
+  METADATA=$(youtube-dl --get-id --get-title --get-thumbnail --get-description \
       --no-check-certificate --no-playlist --playlist-items 1 \
       "${LIVE_URL}" 2>/dev/null)
-  #Savetitle
+  # Extract stream title
   #Title=$(echo "$METADATA" | sed -n '1p'|sed 's#[()/\\!-\$]##g')
+  # Extract stream cover url
+  COVERURL=$(echo "$METADATA" | sed -n '3p')
 
   # Extract video id of live stream
   ID=$(echo "$METADATA" | sed -n '2p')
@@ -56,13 +58,14 @@ while true; do
   # Record using MPEG-2 TS format to avoid broken file caused by interruption
   #FNAME="youtube_${Title}_$(date +"%Y%m%d_%H%M%S")_${ID}.ts"
   FNAME="youtube_$(date +"%Y%m%d_%H%M%S")_${ID}.ts" 
-  # Also save the metadate to file
+  # Also save the metadata and cover to file
   if [ -n "$METADATA" ]
   then 
     echo "$METADATA" > "${5}${FOLDERBYDATE}/${FNAME}.info.txt"
+    wget -O "${5}${FOLDERBYDATE}/${FNAME}.jpg" "$COVERURL"
 
   # Print logs
-    echo "$LOG_PREFIX Start recording, metadata saved to ${5}${FOLDERBYDATE}/${FNAME}.info.txt."
+    echo "$LOG_PREFIX Start recording, metadata saved to ${5}${FOLDERBYDATE}/${FNAME}.info.txt, cover saved to ${5}${FOLDERBYDATE}/${FNAME}.jpg"
     echo "$LOG_PREFIX Use command \"tail -f ${6}${FNAME}.log\" to track recording progress."
 
   # Start recording
@@ -79,7 +82,8 @@ while true; do
       > "${6}${FNAME}.log" 2>&1
     elif [ "$STREAMORRECORD" == "record" ]
     then
-      streamlink --hls-live-restart --loglevel trace -o "${5}${FOLDERBYDATE}/${FNAME}" \
+      #streamlink --hls-live-restart --loglevel trace -o "${5}${FOLDERBYDATE}/${FNAME}" \
+      streamlink --loglevel trace -o "${5}${FOLDERBYDATE}/${FNAME}" \
       "$LIVE_URL" "1080p,720p,best" > "${6}${FNAME}.log" 2>&1
     elif [ "$STREAMORRECORD" == "stream" ]
     then
@@ -95,7 +99,7 @@ while true; do
     then
       if tail -n 5 "${6}${FNAME}.log"|grep -q "Stream ended" 
       then
-        ./autobackup.sh $NAME $SITE &
+        ./autobackup.sh $NAME $SITE $FOLDERBYDATE $FNAME &
       else
         echo "$LOG_PREFIX stream record fail, check "${6}${FNAME}.log" for detail." 
       fi

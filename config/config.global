@@ -1,8 +1,9 @@
 Backupmethod=baidu
-Servername=newjersey
+Servername=losangeles
 Rcloneremotename=magicalz
 Savefolder=streamrecorded
 Logfolder=log
 Autobackup=on
 StreamOrRecord=record
+Twitchkey=your_twitch_api_key
 Rtmpurl=rtmp://live.mobcrush.net/stream/cf63be75295266115ed1677062e51c7339ebe7f1142a0f66db42cb86a5d273b3
