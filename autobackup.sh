@@ -21,20 +21,20 @@ else
   STREAMLINK_PROCESS=$(ps -efwww|grep streamlink|grep $NAME|grep -v 'grep')
   FFMPEG_PROCESS=$(ps -efwww|grep ffmpeg|grep $NAME|grep -v 'grep')
 fi
-if [ -n "$STREAMLINK_PROCESS" ] || [ -n "$FFMPEG_PROCESS" ]
+if [ -z "$4" ] && [ -n "$STREAMLINK_PROCESS" ] || [ -n "$FFMPEG_PROCESS" ]
 then
-    echo "$LOG_PREFIX skip...stream download is in progress:"
+    echo "$LOG_PREFIX ===autobackup=== skip...stream download is in progress:"
     echo "$STREAMLINK_PROCESS"
     echo "$FFMPEG_PROCESS"
     exit 1
 fi
 if [ $BACKUPMETHOD == "baidu" ] || [ $BACKUPMETHOD == "all" ]
 then
-  echo "$LOG_PREFIX check ./log/screen/screenlog_baidu_${LOG_SUFFIX}.log for detail"
+  echo "$LOG_PREFIX ===autobackup=== check ./log/screen/screenlog_baidu_${LOG_SUFFIX}.log for detail"
   screen -L -t "baidu_${LOG_SUFFIX}" -dmS "baidu" ./baidupanbackup.sh $NAME $SITE $3 $4
 fi
 if [ $BACKUPMETHOD == "rclone" ] || [ $BACKUPMETHOD == "all" ]
 then
-  echo "$LOG_PREFIX check ./log/screen/screenlog_rclone_${LOG_SUFFIX}.log for detail"
+  echo "$LOG_PREFIX ===autobackup=== check ./log/screen/screenlog_rclone_${LOG_SUFFIX}.log for detail"
   screen -L -t "rclone_${LOG_SUFFIX}" -dmS "rclone" ./rclonebackup.sh $NAME $SITE $3 $4
 fi
