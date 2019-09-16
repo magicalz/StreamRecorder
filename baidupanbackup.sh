@@ -12,14 +12,14 @@ TARGETPATH="/stream-recorder/$SERVERNAME"
 [ -n "$4" ] && FILENAME=$(echo "$4"|awk -F . '{print $1}') && TARGETPATH="$TARGETPATH/$3" && SAVEFOLDER="$SAVEFOLDER/$FILENAME.*" 
 LOG_PREFIX=$(date +"[%Y-%m-%d %H:%M:%S]")
 LOG_SUFFIX=$(date +"%Y%m%d_%H%M%S")
-echo "$LOG_PREFIX BaiduPCS begin to backup files"
-echo "$LOG_PREFIX check ./log/BaiduPCS_${LOG_SUFFIX}.log for detail"
+echo "$LOG_PREFIX ===baidubackup=== BaiduPCS begin to backup files"
+echo "$LOG_PREFIX ===baidubackup=== check ./log/BaiduPCS_${LOG_SUFFIX}.log for detail"
 BaiduPCS-Go upload "$SAVEFOLDER" "$TARGETPATH" > "./log/BaiduPCS_${LOG_SUFFIX}.log" 2>&1
 if grep -q -E "上传文件失败|全部上传完毕, 总大小: 0B" ./log/BaiduPCS_${LOG_SUFFIX}.log
 then
-  echo "$LOG_PREFIX skip clean...BaiduPCS backup failed, check ./log/BaiduPCS_${LOG_SUFFIX}.log for detail"
+  echo "$LOG_PREFIX ===baidubackup=== skip clean...BaiduPCS backup failed, check ./log/BaiduPCS_${LOG_SUFFIX}.log for detail"
 else  
-  echo "$LOG_PREFIX BaiduPCS backup complete"
+  echo "$LOG_PREFIX ===baidubackup=== BaiduPCS backup complete"
   if [ "$NAME" == "all" ]
   then
     RCLONE_PROCESS=$(screen -ls|grep rclone)
@@ -28,10 +28,10 @@ else
   fi
   if [ -z "$RCLONE_PROCESS" ]
   then
-    echo "$LOG_PREFIX begin to clean files"
-    ./clean.sh $NAME $SITE $3 $4
+    echo "$LOG_PREFIX ===baidubackup=== begin to clean files"
+    ./autoclean.sh $NAME $SITE $3 $4
   else
-    echo "$LOG_PREFIX skip...rclone backup stilling running"
+    echo "$LOG_PREFIX ===baidubackup=== skip...rclone backup stilling running"
     echo "$RCLONE_PROCESS"  
   fi
 fi

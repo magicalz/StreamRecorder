@@ -15,7 +15,7 @@ SITE="$2"
 SAVEFOLDER=$(grep "Savefolder" ./config/config.global|awk -F = '{print $2}')
 LOG_PREFIX=$(date +"[%Y-%m-%d %H:%M:%S]")
 LOG_SUFFIX=$(date +"%Y%m%d_%H%M%S")
-echo "$LOG_PREFIX check ./log/clean_$LOG_SUFFIX.log for detail"
+echo "$LOG_PREFIX ===autoclean=== check ./log/clean_$LOG_SUFFIX.log for detail"
 [ "$NAME" != "all" ] && SAVEFOLDER="${SAVEFOLDER}/${NAME}"
 [ -n "$SITE" ] && SAVEFOLDER="${SAVEFOLDER}/${SITE}"
 [ -n "$3" ] && SAVEFOLDER="${SAVEFOLDER}/${3}"
