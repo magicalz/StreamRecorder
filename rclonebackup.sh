@@ -20,7 +20,7 @@ then
 else
   rclone copy --no-traverse "$SAVEFOLDER" "$TARGETPATH" --include-from rcloneinclude.txt --buffer-size 32M --transfers 6 --low-level-retries 200 -v > "./log/rclone_${LOG_SUFFIX}.log" 2>&1
 fi
-if ! grep -q "ERROR" ./log/rclone_${LOG_SUFFIX}.log && grep -q "Copied (new)" ./log/rclone_${LOG_SUFFIX}.log
+if ! grep -q "error" ./log/rclone_${LOG_SUFFIX}.log && grep -q "Copied (new)" ./log/rclone_${LOG_SUFFIX}.log
 then
   echo "$LOG_PREFIX ===rclonebackup=== rclone backup complete" 
   if [ "$NAME" == "all" ]
