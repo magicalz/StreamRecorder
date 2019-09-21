@@ -1,7 +1,7 @@
 Backupmethod=baidu
 Servername=losangeles
 Rcloneremotename=magicalz
-Savefolder=streamrecorded
+Savefolder=recorded
 Logfolder=log
 Autobackup=on
 StreamOrRecord=record

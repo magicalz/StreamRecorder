@@ -17,7 +17,7 @@ FORMAT="${6:-best}"
 LOOPORONCE="${7:-once}"
 INTERVAL="${8:-30}"
 STREAMORRECORD="${9:-record}"
-RTMPURL="$10"
+RTMPURL="${10}"
 AUTOBACKUP=$(grep "Autobackup" ./config/config.global|awk -F = '{print $2}')
 
 # Construct full URL if only channel id given
@@ -86,8 +86,10 @@ while true; do
     #FNAME="youtube_${Title}_$(date +"%Y%m%d_%H%M%S")_${ID}.ts"
     FNAME="youtube_$(date +"%Y%m%d_%H%M%S")_${ID}.ts" 
     # Also save the metadata and cover to file
-    echo "$METADATA" > "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}.info.txt"
-    wget -O "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}.jpg" "$COVERURL"
+    if [ "$STREAMORRECORD" != "stream" ]; then
+      echo "$METADATA" > "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}.info.txt"
+      wget -O "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}.jpg" "$COVERURL"
+    fi
   fi
   if [ "$SITE" == "bilibili" ]
   then
@@ -102,8 +104,8 @@ while true; do
     #TITLE=$(echo "$METADATA" | sed -n '3p'|sed 's/[()/\\!-\$]//g')
     ID=$(echo "$METADATA" | sed -n '2p')
     #FNAME="twitch_${ID}_${TITLE}_$(date +"%Y%m%d_%H%M%S").ts"
-    FNAME="twitch_${ID}_$(date +"%Y%m%d_%H%M%S").ts"
-    echo "$METADATA" > "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}.info.txt"
+    FNAME="twitch_$(date +"%Y%m%d_%H%M%S")_${ID}.ts"
+    [ "$STREAMORRECORD" != "stream" ] && echo "$METADATA" > "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}.info.txt"
   fi
   if [ "$SITE" == "twitcast" ]
   then
@@ -116,7 +118,7 @@ while true; do
   echo "$LOG_PREFIX Start recording, stream saved to ${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}"
   [ "$SITE" == "youtube" ] || [ "$SITE" == "twitch" ] && echo "$LOG_PREFIX metadata saved to ${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}.info.txt"
   [ "$SITE" == "youtube" ] && echo "$LOG_PREFIX cover saved to ${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}.jpg"
-  echo "$LOG_PREFIX Use command \"tail -f ${LOGFOLDER}${FNAME}.log\" to track recording progress."
+  echo "$LOG_PREFIX recording log saved to ${LOGFOLDER}${FNAME}.log, streaming log saved to ${LOGFOLDER}${FNAME}.streaming.log"
   # Record using MPEG-2 TS format to avoid broken file caused by interruption
   # Start recording
   # ffmpeg -i "$M3U8_URL" -codec copy -f mpegts "savevideo/$FNAME" > "savevideo/$FNAME.log" 2>&1
@@ -127,21 +129,20 @@ while true; do
   then
     if [ "$STREAMORRECORD" == "both" ]
     then
-      streamlink --loglevel trace "$LIVE_URL" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
-      -codec copy -f mpegts "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}" \ 
+      streamlink "$LIVE_URL" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
+      -codec copy -f mpegts "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}" \
       -vcodec copy -acodec aac -strict -2 -f flv "${RTMPURL}" \
-      > "${LOGFOLDER}${FNAME}.log" 2>&1
+      > "${LOGFOLDER}${FNAME}.streaming.log" 2>&1
+      STREAMSUCCESS=$?
     elif [ "$STREAMORRECORD" == "record" ]
     then
       streamlink --loglevel trace -o "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}" \
       "$LIVE_URL" "1080p,720p,best" > "${LOGFOLDER}${FNAME}.log" 2>&1
     elif [ "$STREAMORRECORD" == "stream" ]
     then
-      streamlink --loglevel trace "$LIVE_URL" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
+      streamlink "$LIVE_URL" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
       -vcodec copy -acodec aac -strict -2 -f flv "${RTMPURL}" \
-      > "${LOGFOLDER}${FNAME}.log" 2>&1 
-    else
-      echo "$LOG_PREFIX skip...please check StreamOrRecord parameter in config file, should be record|stream|both" 
+      > "${LOGFOLDER}${FNAME}.streaming.log" 2>&1 
     fi
   else
     ./livedl -tcas "$CHANNELID" > "${LOGFOLDER}${FNAME}.log" 2>&1
@@ -151,13 +152,13 @@ while true; do
   fi
   # backup stream if autobackup is on 
   sleep 5 
-  if [ "$AUTOBACKUP" == "on" ] 
+  if [ "$AUTOBACKUP" == "on" ] && [ "$STREAMORRECORD" != "stream" ]
   then
-    if [ "$SITE" != "twitcast" ] && tail -n 5 "${LOGFOLDER}${FNAME}.log"|grep -q "Stream ended" || [ "X$STREAMSUCCESS" == "X0" ]
+    if ([ "$SITE" != "twitcast" ] && [ "$STREAMORRECORD" == "record" ] && tail -n 5 "${LOGFOLDER}${FNAME}.log"|grep -q "Stream ended") || [ "X$STREAMSUCCESS" == "X0" ]
     then
       ./autobackup.sh $NAME $SITE $FOLDERBYDATE $FNAME &
     else
-      echo "$LOG_PREFIX stream record fail, check "${LOGFOLDER}${FNAME}.log" for detail." 
+      echo "$LOG_PREFIX stream record fail, check ${LOGFOLDER}${FNAME}.log and ${LOGFOLDER}${FNAME}.streaming.log for detail."
     fi
   fi  
 

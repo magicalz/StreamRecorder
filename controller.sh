@@ -15,8 +15,10 @@ fi
 FORMAT="${2:-best}"
 SAVEFOLDERGLOBAL=$(grep "Savefolder" ./config/config.global|awk -F = '{print $2}')
 LOGFOLDERGLOBAL=$(grep "Logfolder" ./config/config.global|awk -F = '{print $2}')
-SAVEFOLDER=$(grep "Savefolder" ./config/"$1".config|awk -F = '{print $2}')
-LOGFOLDER=$(grep "Logfolder" ./config/"$1".config|awk -F = '{print $2}')
+SAVEFOLDER="$SAVEFOLDERGLOBAL/$1/"
+LOGFOLDER="$LOGFOLDERGLOBAL/$1/"
+#SAVEFOLDER=$(grep "Savefolder" ./config/"$1".config|awk -F = '{print $2}')
+#LOGFOLDER=$(grep "Logfolder" ./config/"$1".config|awk -F = '{print $2}')
 INTERVAL=$(grep "Interval" ./config/"$1".config|awk -F = '{print $2}')
 LOOP=$(grep "LoopOrOnce" ./config/"$1".config|awk -F = '{print $2}')
 YOUTUBE=$(grep "Youtube" ./config/"$1".config|awk -F = '{print $2}')
@@ -33,6 +35,7 @@ if grep -q "Rtmpurl" ./config/${1}.config
 then
   RTMPURL=$(grep "Rtmpurl" ./config/${1}.config|awk -F = '{print $2}')
 fi
+
 [ "$STREAMORRECORD" != "both" ] && [ "$STREAMORRECORD" != "record" ] && [ "$STREAMORRECORD" != "stream" ] && echo "===controller=== skip...please check StreamOrRecord parameter in config file, should be record|stream|both" && exit 1
 [ "$STREAMORRECORD" == "both" ] || [ "$STREAMORRECORD" == "stream" ] && [ -z "$RTMPURL" ] && echo "===controller=== skip...StreamOrRecord is \"$STREAMORRECORD\" but Rtmpurl is empty, please check StreamOrRecord and Rtmpurl parameters in config file" && exit 1
 
