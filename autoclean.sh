@@ -12,7 +12,7 @@ then
 fi
 NAME="${1:-all}"
 SITE="$2"
-SAVEFOLDER=$(grep "Savefolder" ./config/config.global|awk -F = '{print $2}')
+SAVEFOLDER=$(grep "Savefolder" ./config/global.config|awk -F = '{print $2}')
 LOG_PREFIX=$(date +"[%Y-%m-%d %H:%M:%S]")
 LOG_SUFFIX=$(date +"%Y%m%d_%H%M%S")
 echo "$LOG_PREFIX ===autoclean=== check ./log/clean_$LOG_SUFFIX.log for detail"
@@ -47,14 +47,10 @@ then
   echo "$LOG_PREFIX below files will be deleted:" >> "./log/clean_${LOG_SUFFIX}.log"
   find $SAVEFOLDER -maxdepth 4 -name "*.*" -size 0 -type f -exec ls -l {} \; >> "./log/clean_${LOG_SUFFIX}.log" 2>&1
   find $SAVEFOLDER -maxdepth 4 -name "*.*" -size 0 -type f -delete ; >> "./log/clean_${LOG_SUFFIX}.log" 2>&1
-  find $SAVEFOLDER -maxdepth 4 -name "*.ts" -type f -exec ls -l {} \; >> "./log/clean_${LOG_SUFFIX}.log" 2>&1
-  find $SAVEFOLDER -maxdepth 4 -name "*.ts" -type f -delete ; >> "./log/clean_${LOG_SUFFIX}.log" 2>&1
-  find $SAVEFOLDER -maxdepth 4 -name "*.info.txt" -type f -exec ls -l {} \; >> "./log/clean_${LOG_SUFFIX}.log" 2>&1
-  find $SAVEFOLDER -maxdepth 4 -name "*.info.txt" -type f -delete >> "./log/clean_${LOG_SUFFIX}.log" 2>&1
-  find $SAVEFOLDER -maxdepth 4 -name "*.jpg" -type f -exec ls -l {} \; >> "./log/clean_${LOG_SUFFIX}.log" 2>&1
-  find $SAVEFOLDER -maxdepth 4 -name "*.jpg" -type f -delete >> "./log/clean_${LOG_SUFFIX}.log" 2>&1
+  find $SAVEFOLDER -maxdepth 4 \( -name "*.ts" -o -name "*.mp4" -o -name "*.info.txt" -o -name "*.jpg" \) -type f -exec ls -l {} \; >> "./log/clean_${LOG_SUFFIX}.log" 2>&1
+  find $SAVEFOLDER -maxdepth 4 \( -name "*.ts" -o -name "*.mp4" -o -name "*.info.txt" -o -name "*.jpg" \) -type f -delete ; >> "./log/clean_${LOG_SUFFIX}.log" 2>&1
   if [ -d ~/.cache/rclone ]; then
-    find ~/.cache/rclone -maxdepth 9 -name "*.*"   -type f -exec ls -l {} \; >> "./log/clean_${LOG_SUFFIX}.log" 2>&1
+    find ~/.cache/rclone -maxdepth 9 -name "*.*" -type f -exec ls -l {} \; >> "./log/clean_${LOG_SUFFIX}.log" 2>&1
     rm -rf ~/.cache/rclone
   fi
 elif [ -n "$STREAMLINK_PROCESS" ] || [ -n "$FFMPEG_PROCESS" ]

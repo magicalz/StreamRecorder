@@ -3,9 +3,9 @@ source /etc/profile
 cd `dirname $0`
 LOG_PREFIX=$(date +"[%Y-%m-%d %H:%M:%S]")
 LOG_SUFFIX=$(date +"%Y%m%d_%H%M%S")
-for ((NUM=$(ls ./config|grep -c .config); NUM>0; --NUM))
+for ((NUM=$(ls ./config|grep -v global|grep -c .config); NUM>0; --NUM))
 do
-NAME=$(ls ./config|grep .config|sed 's/.config//g'|sed -n "$NUM"p)
+NAME=$(ls ./config|grep .config|grep -v global|sed 's/.config//g'|sed -n "$NUM"p)
 if [ -z "$(screen -ls|grep $NAME)" ]
 then
 sleep 1

@@ -13,8 +13,8 @@ then
 fi
 
 FORMAT="${2:-best}"
-SAVEFOLDERGLOBAL=$(grep "Savefolder" ./config/config.global|awk -F = '{print $2}')
-LOGFOLDERGLOBAL=$(grep "Logfolder" ./config/config.global|awk -F = '{print $2}')
+SAVEFOLDERGLOBAL=$(grep "Savefolder" ./config/global.config|awk -F = '{print $2}')
+LOGFOLDERGLOBAL=$(grep "Logfolder" ./config/global.config|awk -F = '{print $2}')
 SAVEFOLDER="$SAVEFOLDERGLOBAL/$1/"
 LOGFOLDER="$LOGFOLDERGLOBAL/$1/"
 #SAVEFOLDER=$(grep "Savefolder" ./config/"$1".config|awk -F = '{print $2}')
@@ -25,12 +25,12 @@ YOUTUBE=$(grep "Youtube" ./config/"$1".config|awk -F = '{print $2}')
 BILIBILI=$(grep "Bilibili" ./config/"$1".config|awk -F = '{print $2}')
 TWITCH=$(grep "Twitch" ./config/"$1".config|awk -F = '{print $2}')
 TWITCAST=$(grep "Twitcast" ./config/"$1".config|awk -F = '{print $2}')
-STREAMORRECORD=$(grep "StreamOrRecord" ./config/config.global|awk -F = '{print $2}')
+STREAMORRECORD=$(grep "StreamOrRecord" ./config/global.config|awk -F = '{print $2}')
 if grep -q "StreamOrRecord" ./config/${1}.config
 then
   STREAMORRECORD=$(grep "StreamOrRecord" ./config/${1}.config|awk -F = '{print $2}')
 fi
-RTMPURL=$(grep "Rtmpurl" ./config/config.global|awk -F = '{print $2}')
+RTMPURL=$(grep "Rtmpurl" ./config/global.config|awk -F = '{print $2}')
 if grep -q "Rtmpurl" ./config/${1}.config
 then
   RTMPURL=$(grep "Rtmpurl" ./config/${1}.config|awk -F = '{print $2}')

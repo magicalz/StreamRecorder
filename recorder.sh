@@ -18,7 +18,8 @@ LOOPORONCE="${7:-once}"
 INTERVAL="${8:-30}"
 STREAMORRECORD="${9:-record}"
 RTMPURL="${10}"
-AUTOBACKUP=$(grep "Autobackup" ./config/config.global|awk -F = '{print $2}')
+AUTOBACKUP=$(grep "Autobackup" ./config/global.config|awk -F = '{print $2}')
+SAVEFORMAT=$(grep "Saveformat" ./config/global.config|awk -F = '{print $2}')
 
 # Construct full URL if only channel id given
 [ "$SITE" == "youtube" ] && LIVE_URL="https://www.youtube.com/channel/$CHANNELID/live"
@@ -49,7 +50,7 @@ while true; do
     fi
     if [ "$SITE" == "twitch" ]
     then
-      TWITCHKEY=$(grep "Twitchkey" ./config/config.global|awk -F = '{print $2}')
+      TWITCHKEY=$(grep "Twitchkey" ./config/global.config|awk -F = '{print $2}')
       if [ -z "$TWITCHKEY" ]
       then
         echo "$LOG_PREFIX skip...Twitchkey is empty!"
@@ -79,12 +80,13 @@ while true; do
     [ -z "$METADATA" ] && echo "$LOG_PREFIX skip...youtube metadata is empty!" && continue
     # Extract stream title
     #Title=$(echo "$METADATA" | sed -n '1p'|sed 's#[()/\\!-\$]##g')
-    # Extract stream cover url
-    COVERURL=$(echo "$METADATA" | sed -n '3p')
     # Extract video id of live stream
     ID=$(echo "$METADATA" | sed -n '2p')
-    #FNAME="youtube_${Title}_$(date +"%Y%m%d_%H%M%S")_${ID}.ts"
-    FNAME="youtube_$(date +"%Y%m%d_%H%M%S")_${ID}.ts" 
+    # Extract stream cover url
+    #COVERURL=$(echo "$METADATA" | sed -n '3p')
+    COVERURL="https://i.ytimg.com/vi/${ID}/maxresdefault.jpg"
+    #FNAME="youtube_${Title}_$(date +"%Y%m%d_%H%M%S")_${ID}.${SAVEFORMAT}"
+    FNAME="youtube_$(date +"%Y%m%d_%H%M%S")_${ID}.${SAVEFORMAT}"
     # Also save the metadata and cover to file
     if [ "$STREAMORRECORD" != "stream" ]; then
       echo "$METADATA" > "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}.info.txt"
@@ -96,23 +98,23 @@ while true; do
     # Savetitle
     TITLE=$(you-get -i "$LIVE_URL"|sed -n '2p'|cut -c 22-|cut -d '.' -f 1|sed 's/[()/\\!-\$]//g')
     # Record using MPEG-2 TS format to avoid broken file caused by interruption
-    FNAME="bil_${CHANNELID}_${TITLE}_$(date +"%Y%m%d_%H%M%S").ts"
+    FNAME="bil_${CHANNELID}_${TITLE}_$(date +"%Y%m%d_%H%M%S").${SAVEFORMAT}"
   fi
   if [ "$SITE" == "twitch" ]
   then
     METADATA=$(youtube-dl --get-id --get-title --get-description "$LIVE_URL")
     #TITLE=$(echo "$METADATA" | sed -n '3p'|sed 's/[()/\\!-\$]//g')
     ID=$(echo "$METADATA" | sed -n '2p')
-    #FNAME="twitch_${ID}_${TITLE}_$(date +"%Y%m%d_%H%M%S").ts"
-    FNAME="twitch_$(date +"%Y%m%d_%H%M%S")_${ID}.ts"
+    #FNAME="twitch_${ID}_${TITLE}_$(date +"%Y%m%d_%H%M%S").${SAVEFORMAT}"
+    FNAME="twitch_$(date +"%Y%m%d_%H%M%S")_${ID}.${SAVEFORMAT}"
     [ "$STREAMORRECORD" != "stream" ] && echo "$METADATA" > "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}.info.txt"
   fi
   if [ "$SITE" == "twitcast" ]
   then
     MOVIEID=$(wget -q -O- ${LIVE_URL} | grep data-movie-id | awk -F '[=\"]+' '{print $2}')
     ID=$(echo "$CHANNELID"|sed 's/:/：/') 
-    LIVEDL_FNAME="${ID}_${MOVIEID}.ts" 
-    FNAME="twitcast_$(date +"%Y%m%d_%H%M%S")_${MOVIEID}.ts"
+    LIVEDL_FNAME="${ID}_${MOVIEID}.${SAVEFORMAT}" 
+    FNAME="twitcast_$(date +"%Y%m%d_%H%M%S")_${MOVIEID}.${SAVEFORMAT}"
   fi
   # Print logs
   echo "$LOG_PREFIX Start recording, stream saved to ${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}"
