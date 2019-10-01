@@ -3,7 +3,7 @@
 本项目源于[live-stream-recorder](https://github.com/printempw/live-stream-recorder)，在此基础上进行了大量魔改，主要是增加了自动运行、自动备份、自动清理等功能，以及使用配置文件大幅简化了使用方法，可以做到无人值守的自动推流与录制
 
 ### 如何使用本工具
-+ 配置文件的使用
++ 配置文件
   + global.config  
   全局配置文件，用于配置推流地址，视频保存目录等  
   具体参数说明:  
@@ -60,7 +60,7 @@
   ./closescreen.sh，手动运行，运行后会列出当前活动的screen子进程，输入screen名称关闭指定子进程或者输入all关闭所有子进程  
   ./cleanlog.sh，手动运行，用于清理24小时以上的日志文件和空白文件  
   
-### screen log保存目录
+### screen log保存目录  
   screen log是程序运行时screen输出的日志文件，vi /etc/screenrc，添加以下内容  
   logfile /var/log/screen/screenlog_%t.log  
   新建screen log目录  
