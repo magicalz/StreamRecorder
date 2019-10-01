@@ -2,7 +2,7 @@
 这是一个视频直播的推流/录制工具，支持youtube/twitch/twitcasting/bilibili等主流直播平台  
 本项目源于[live-stream-recorder](https://github.com/printempw/live-stream-recorder)，在此基础上进行了大量魔改，主要是增加了自动运行、自动备份、自动清理等功能，以及使用配置文件大幅简化了使用方法，可以做到无人值守的自动推流与录制
 
-### 如何使用本工具
+### 如何配置本工具
 + 配置文件
   + global.config  
   全局配置文件，用于配置推流地址，视频保存目录等  
@@ -53,15 +53,15 @@
   > Twitcast  
   twitcasting频道的地址，只需要填写频道ID，如c:rin_co  
   
-+ 启动脚本  
+### 如何运行本工具    
   ./autorun.sh，程序启动脚本，只需运行一次，会自动遍历配置文件夹里的各个频道并开始推流和录制，每个频道会新建一个screen进程方便随时监控  
   ./autobackup.sh，备份脚本，如果在全局设置里设置为on，则视频录制以后会自动上传到指定网盘并删除本地文件，也可以手动运行  
   ./autoclean.sh，清理脚本，每次备份后会自动调用，也可以手动运行  
   ./closescreen.sh，手动运行，运行后会列出当前活动的screen子进程，输入screen名称关闭指定子进程或者输入all关闭所有子进程  
   ./cleanlog.sh，手动运行，用于清理24小时以上的日志文件和空白文件  
   
-### screen log保存目录  
-  screen log是程序运行时screen输出的日志文件，vi /etc/screenrc，添加以下内容  
+### screen log的保存目录  
+  screen log是程序运行时screen输出的日志文件，编辑/etc/screenrc，添加以下内容  
   logfile /var/log/screen/screenlog_%t.log  
   新建screen log目录  
   mkdir /var/log/screen  
@@ -69,11 +69,11 @@
   在程序的log目录下建立screen log目录的软链接  
   ln -s /var/log/screen /home/recorder/StreamRecorder/log/screen  
 
-### Twitcasting频道的录制需要livedl支持
-  下载livedl并放到StreamRecorder根目录即可
+### Twitcasting频道的录制  
+  Twitcasting需要livedl的支持，下载并放到StreamRecorder根目录即可  
   wget https://github.com/yayugu/livedl/releases/download/20181215.36/livedl  
   chmod +x livedl  
-### 开机自动运行  
+### 开机自启   
   vi /etc/rc.local  
   添加以下内容，recorder是运行程序的用户名，如果不指定则默认以root用户运行  
   su - recorder -c "/home/recorder/StreamRecorder/autorun.sh  
