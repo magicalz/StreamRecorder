@@ -3,6 +3,17 @@
 本项目源于[live-stream-recorder](https://github.com/printempw/live-stream-recorder)，在此基础上进行了大量魔改，主要是增加了自动运行、自动备份、自动清理等功能，以及使用配置文件大幅简化了使用方法，可以做到无人值守的自动推流与录制
 
 ### 如何配置本工具
+
++ 程序依赖  
+本工具依赖于以下程序，请自行安装并保证能在 $PATH 中找到。  
+  + ffmpeg
+  + youtube-dl
+  + streamlink
+  + you-get
+  + screen
+  + BaiduPCS-Go
+  + Rclone
+
 + 配置文件
   + global.config  
   全局配置文件，用于配置推流地址，视频保存目录等  
