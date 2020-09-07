@@ -41,6 +41,8 @@
   此参数是推流地址，如rtmp://live.mobcrush.net/stream/115ed1677062e51c7339ebe7f1142a0f66db42cb86a5d27  
   > Twitchkey  
   此参数是Twitch平台的api key，可以在Twitch官网申请，用于Twitch开播检测，如果不监控Twitch频道则可以忽略  
+  > Twitchpwd  
+  此参数是Twitch平台的api key对应的password，可以在Twitch官网申请，用于Twitch开播检测，如果不监控Twitch频道则可以忽略  
   
   + name.config  
   频道配置文件，用于配置单个频道的具体地址以及推流和备份方式等，可以建立多个  
@@ -65,6 +67,8 @@
   twitcasting频道的地址，只需要填写频道ID，如c:rin_co  
   
 ### 如何运行本工具    
+  ./streamrecorder.sh [start|restart|stop|cleanfile|cleanlog|backup]， 程序总入口，用于统一调用其他脚本  
+  以下脚本均可通过streamrecorder.sh来运行  
   ./autorun.sh，程序启动脚本，只需运行一次，会自动遍历配置文件夹里的各个频道并开始推流和录制，每个频道会新建一个screen进程方便随时监控  
   ./autobackup.sh，备份脚本，如果在全局设置里设置为on，则视频录制以后会自动上传到指定网盘并删除本地文件，也可以手动运行  
   ./autoclean.sh，清理脚本，每次备份后会自动调用，也可以手动运行  
@@ -81,13 +85,14 @@
   ln -s /var/log/screen /home/recorder/StreamRecorder/log/screen  
 
 ### Twitcasting频道的录制  
-  Twitcasting需要livedl的支持，下载并放到StreamRecorder根目录即可  
-  wget https://github.com/yayugu/livedl/releases/download/20181215.36/livedl  
-  chmod +x livedl  
+  ~~Twitcasting需要livedl的支持，下载并放到StreamRecorder根目录即可~~  
+  ~~wget https://github.com/yayugu/livedl/releases/download/20181215.36/livedl~~  
+  ~~chmod +x livedl~~  
+  现已统一使用streamlink录制视频，不需要另外下载livedl  
 ### 开机自启   
   vi /etc/rc.local  
   添加以下内容，recorder是运行程序的用户名，如果不指定则默认以root用户运行  
-  su - recorder -c "/home/recorder/StreamRecorder/autorun.sh  
+  su - recorder -c "/home/recorder/StreamRecorder/streamrecorder.sh start  
   
   
   
