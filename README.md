@@ -50,7 +50,7 @@
   > Interval  
   此参数是开播检测的时间间隔，默认30，即30秒  
   > LoopOrOnce  
-  此参数决定程序是一直运行还是单次运行  
+  可选: loop/once，此参数决定程序是一直运行还是单次运行  
   > Backupmethod  
   同global.config，如果在此设置则会覆盖global.config里的值，用于单独设置某个频道的备份方式  
   > StreamOrRecord  
