@@ -37,11 +37,11 @@ while true; do
     #Check whether the channel is live
     #curl -s -N https://www.youtube.com/channel/$1/live|grep -q '\\"isLive\\":true' && break
     #wget -q -O- $LIVE_URL|grep -q '\\"isLive\\":true' && break
-    [ "$SITE" == "youtube" ] && [ $(wget -q -O- "$LIVE_URL" |grep -o '\\"isLive\\":true'|wc -l) -ge 2 ] && break
+    [ "$SITE" == "youtube" ] && wget -q -O- "$LIVE_URL" |grep -q '\\"isLive\\":true' && break
     if [ "$SITE" == "bilibili" ]
     then
       YOUTUBEURL=$(grep "Youtube" ./config/"$NAME".config|awk -F = '{print $2}')
-      if [ -n "$YOUTUBEURL" ] && [ $(wget -q -O- "https://www.youtube.com/channel/$YOUTUBEURL/live" |grep -o '\\"isLive\\":true'|wc -l) -ge 2 ]
+      if [ -n "$YOUTUBEURL" ] && wget -q -O- "https://www.youtube.com/channel/$YOUTUBEURL/live" |grep -q '\\"isLive\\":true'
       then
         echo "$LOG_PREFIX skip...youtube channel is already streaming!"
       else
@@ -51,11 +51,14 @@ while true; do
     if [ "$SITE" == "twitch" ]
     then
       TWITCHKEY=$(grep "Twitchkey" ./config/global.config|awk -F = '{print $2}')
-      if [ -z "$TWITCHKEY" ]
+      TWITCHPWD=$(grep "Twitchpwd" ./config/global.config|awk -F = '{print $2}')
+      if [ -z "$TWITCHKEY" ] || [ -z "$TWITCHPWD" ]
       then
-        echo "$LOG_PREFIX skip...Twitchkey is empty!"
+        echo "$LOG_PREFIX skip...Twitchkey or Twitchpwd is empty!"
       else
-        wget -q -O- --header="Client-ID: $TWITCHKEY" https://api.twitch.tv/helix/streams?user_login=$CHANNELID|grep -q \"type\":\"live\" && break
+        #wget -q -O- --header="Client-ID: $TWITCHKEY" https://api.twitch.tv/helix/streams?user_login=$CHANNELID|grep -q \"type\":\"live\" && break
+        TWITCHTOKEN=$(curl -X POST 'https://id.twitch.tv/oauth2/token?client_id='$TWITCHKEY'&client_secret='$TWITCHPWD'&grant_type=client_credentials' | awk -F '[,:"]+' '{for(i=1;i<=NF-1;i++)if($i ~ /access_token/)print $(i+1)}')
+        wget -q -O- --header="Client-ID: $TWITCHKEY" --header="Authorization: Bearer ${TWITCHTOKEN}" https://api.twitch.tv/helix/streams?user_login=$CHANNELID | grep -q \"type\":\"live\" && break
       fi
     fi
     if [ "$SITE"="twitcast" ]
@@ -111,10 +114,10 @@ while true; do
   fi
   if [ "$SITE" == "twitcast" ]
   then
-    MOVIEID=$(wget -q -O- ${LIVE_URL} | grep data-movie-id | awk -F '[=\"]+' '{print $2}')
-    ID=$(echo "$CHANNELID"|sed 's/:/：/') 
-    LIVEDL_FNAME="${ID}_${MOVIEID}.${SAVEFORMAT}" 
-    FNAME="twitcast_$(date +"%Y%m%d_%H%M%S")_${MOVIEID}.${SAVEFORMAT}"
+    #MOVIEID=$(wget -q -O- ${LIVE_URL} | grep data-movie-id | awk -F '[=\"]+' '{for(i=1;i<=NF-1;i++)if($i ~ /data-movie-id/)print $(i+1)}')
+    #ID=$(echo "$CHANNELID"|sed 's/:/：/') 
+    #LIVEDL_FNAME="${ID}_${MOVIEID}.${SAVEFORMAT}" 
+    FNAME="twitcast_$(date +"%Y%m%d_%H%M%S")_${CHANNELID}.${SAVEFORMAT}"
   fi
   # Print logs
   echo "$LOG_PREFIX Start recording, stream saved to ${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}"
@@ -127,8 +130,8 @@ while true; do
   # Use streamlink "--hls-live-restart" parameter to record for HLS seeking support
   #M3U8_URL=$(streamlink --stream-url "https://www.youtube.com/watch?v=${ID}" "best")
   #ffmpeg   -i "$M3U8_URL" -codec copy   -f hls -hls_time 3600 -hls_list_size 0 "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}" > "${LOGFOLDER}${FNAME}.log" 2>&1
-  if [ "$SITE" != "twitcast" ]
-  then
+  #if [ "$SITE" != "twitcast" ]
+  #then
     if [ "$STREAMORRECORD" == "both" ]
     then
       streamlink "$LIVE_URL" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
@@ -146,17 +149,18 @@ while true; do
       -vcodec copy -acodec aac -strict -2 -f flv "${RTMPURL}" \
       > "${LOGFOLDER}${FNAME}.streaming.log" 2>&1 
     fi
-  else
-    ./livedl -tcas "$CHANNELID" > "${LOGFOLDER}${FNAME}.log" 2>&1
-    STREAMSUCCESS=$? 
+  #else
+    #./livedl -tcas "$CHANNELID" > "${LOGFOLDER}${FNAME}.log" 2>&1
+    #STREAMSUCCESS=$? 
     #move stream file to streamrecorded folder
-    [ $STREAMSUCCESS -eq 0 ] && [ -f "./${LIVEDL_FNAME}" ] && mv ./$LIVEDL_FNAME $SAVEFOLDER$FOLDERBYDATE/$FNAME
-  fi
+    #[ $STREAMSUCCESS -eq 0 ] && [ -f "./${LIVEDL_FNAME}" ] && mv ./$LIVEDL_FNAME $SAVEFOLDER$FOLDERBYDATE/$FNAME
+  #fi
   # backup stream if autobackup is on 
   sleep 5 
   if [ "$AUTOBACKUP" == "on" ] && [ "$STREAMORRECORD" != "stream" ]
   then
-    if ([ "$SITE" != "twitcast" ] && [ "$STREAMORRECORD" == "record" ] && tail -n 5 "${LOGFOLDER}${FNAME}.log"|grep -q "Stream ended") || [ "X$STREAMSUCCESS" == "X0" ]
+    #if ([ "$SITE" != "twitcast" ] && [ "$STREAMORRECORD" == "record" ] && tail -n 5 "${LOGFOLDER}${FNAME}.log"|grep -q "Stream ended") || [ "X$STREAMSUCCESS" == "X0" ]
+    if ([ "$STREAMORRECORD" == "record" ] && tail -n 5 "${LOGFOLDER}${FNAME}.log"|grep -q "Stream ended") || [ "X$STREAMSUCCESS" == "X0" ]
     then
       ./autobackup.sh $NAME $SITE $FOLDERBYDATE $FNAME &
     else
