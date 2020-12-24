@@ -37,11 +37,11 @@ while true; do
     #Check whether the channel is live
     #curl -s -N https://www.youtube.com/channel/$1/live|grep -q '\\"isLive\\":true' && break
     #wget -q -O- $LIVE_URL|grep -q '\\"isLive\\":true' && break
-    [ "$SITE" == "youtube" ] && wget -q -O- "$LIVE_URL" |grep -q '\\"isLive\\":true' && break
+    [ "$SITE" == "youtube" ] && wget -q -O- "$LIVE_URL"|grep 'www.youtube.com/embed/live_stream'|grep -q '\"isLive\":true' && break
     if [ "$SITE" == "bilibili" ]
     then
       YOUTUBEURL=$(grep "Youtube" ./config/"$NAME".config|awk -F = '{print $2}')
-      if [ -n "$YOUTUBEURL" ] && wget -q -O- "https://www.youtube.com/channel/$YOUTUBEURL/live" |grep -q '\\"isLive\\":true'
+      if [ -n "$YOUTUBEURL" ] && wget -q -O- "https://www.youtube.com/channel/$YOUTUBEURL/live" |grep 'www.youtube.com/embed/live_stream'|grep -q '\"isLive\":true'
       then
         echo "$LOG_PREFIX skip...youtube channel is already streaming!"
       else
@@ -130,36 +130,27 @@ while true; do
   # Use streamlink "--hls-live-restart" parameter to record for HLS seeking support
   #M3U8_URL=$(streamlink --stream-url "https://www.youtube.com/watch?v=${ID}" "best")
   #ffmpeg   -i "$M3U8_URL" -codec copy   -f hls -hls_time 3600 -hls_list_size 0 "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}" > "${LOGFOLDER}${FNAME}.log" 2>&1
-  #if [ "$SITE" != "twitcast" ]
-  #then
-    if [ "$STREAMORRECORD" == "both" ]
-    then
-      streamlink "$LIVE_URL" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
-      -codec copy -f mpegts "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}" \
-      -vcodec copy -acodec aac -strict -2 -f flv "${RTMPURL}" \
-      > "${LOGFOLDER}${FNAME}.streaming.log" 2>&1
-      STREAMSUCCESS=$?
-    elif [ "$STREAMORRECORD" == "record" ]
-    then
-      streamlink --loglevel trace -o "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}" \
-      "$LIVE_URL" "1080p,720p,best" > "${LOGFOLDER}${FNAME}.log" 2>&1
-    elif [ "$STREAMORRECORD" == "stream" ]
-    then
-      streamlink "$LIVE_URL" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
-      -vcodec copy -acodec aac -strict -2 -f flv "${RTMPURL}" \
-      > "${LOGFOLDER}${FNAME}.streaming.log" 2>&1 
-    fi
-  #else
-    #./livedl -tcas "$CHANNELID" > "${LOGFOLDER}${FNAME}.log" 2>&1
-    #STREAMSUCCESS=$? 
-    #move stream file to streamrecorded folder
-    #[ $STREAMSUCCESS -eq 0 ] && [ -f "./${LIVEDL_FNAME}" ] && mv ./$LIVEDL_FNAME $SAVEFOLDER$FOLDERBYDATE/$FNAME
-  #fi
+  if [ "$STREAMORRECORD" == "both" ]
+  then
+    streamlink "$LIVE_URL" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
+    -codec copy -f mpegts "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}" \
+    -vcodec copy -acodec aac -strict -2 -f flv "${RTMPURL}" \
+    > "${LOGFOLDER}${FNAME}.streaming.log" 2>&1
+    STREAMSUCCESS=$?
+  elif [ "$STREAMORRECORD" == "record" ]
+  then
+    streamlink --loglevel trace -o "${SAVEFOLDER}${FOLDERBYDATE}/${FNAME}" \
+    "$LIVE_URL" "1080p,720p,best" > "${LOGFOLDER}${FNAME}.log" 2>&1
+  elif [ "$STREAMORRECORD" == "stream" ]
+  then
+    streamlink "$LIVE_URL" "1080p,720p,best" -o - | ffmpeg -re -i pipe:0 \
+    -vcodec copy -acodec aac -strict -2 -f flv "${RTMPURL}" \
+    > "${LOGFOLDER}${FNAME}.streaming.log" 2>&1 
+  fi
   # backup stream if autobackup is on 
   sleep 5 
   if [ "$AUTOBACKUP" == "on" ] && [ "$STREAMORRECORD" != "stream" ]
   then
-    #if ([ "$SITE" != "twitcast" ] && [ "$STREAMORRECORD" == "record" ] && tail -n 5 "${LOGFOLDER}${FNAME}.log"|grep -q "Stream ended") || [ "X$STREAMSUCCESS" == "X0" ]
     if ([ "$STREAMORRECORD" == "record" ] && tail -n 5 "${LOGFOLDER}${FNAME}.log"|grep -q "Stream ended") || [ "X$STREAMSUCCESS" == "X0" ]
     then
       ./autobackup.sh $NAME $SITE $FOLDERBYDATE $FNAME &
