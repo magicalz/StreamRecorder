@@ -4,14 +4,16 @@
 
 ### 如何配置本工具
 
+可以参考我之前写的一篇B站专栏：https://www.bilibili.com/read/cv3697584
+
 + 程序依赖  
 本工具依赖于以下程序，请自行安装并保证能在 $PATH 中找到。  
   + ffmpeg
   + youtube-dl
   + streamlink
   + you-get
-  + screen
-  + BaiduPCS-Go
+  + screen 
+  + ~~BaiduPCS-Go 该项目已经消失在历史的长河里~~ 
   + Rclone
 
 + 配置文件
